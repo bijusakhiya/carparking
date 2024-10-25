@@ -1,7 +1,5 @@
-
-import 'package:carparking2/screens/signup_page.dart';
 import 'package:flutter/material.dart';
-
+import 'package:carparking2/screens/signup_page.dart';
 import 'home_page.dart';
 
 void main() => runApp(CarParkApp());
@@ -17,11 +15,26 @@ class CarParkApp extends StatelessWidget {
 }
 
 class LoginPage extends StatelessWidget {
+  // Controllers for email and password fields
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Email validation using regex
+  bool _isValidEmail(String email) {
+    final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
+  }
+
+  // Password validation (at least 6 characters for example)
+  bool _isValidPassword(String password) {
+    return password.length >= 6;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -44,6 +57,7 @@ class LoginPage extends StatelessWidget {
 
             // Email Field
             TextField(
+              controller: _emailController,
               style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 filled: true,
@@ -59,6 +73,7 @@ class LoginPage extends StatelessWidget {
 
             // Password Field
             TextField(
+              controller: _passwordController,
               style: TextStyle(color: Colors.white),
               obscureText: true,
               decoration: InputDecoration(
@@ -76,10 +91,40 @@ class LoginPage extends StatelessWidget {
             // Login Button
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ParkingSlotsPage()),
-                );
+                final email = _emailController.text.trim();
+                final password = _passwordController.text.trim();
+
+                if (email.isEmpty || password.isEmpty) {
+                  // Show Snackbar if fields are empty
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Please enter both email and password'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                } else if (!_isValidEmail(email)) {
+                  // Email validation failed
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Please enter a valid email address'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                } else if (!_isValidPassword(password)) {
+                  // Password validation failed
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Password must be at least 6 characters'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                } else {
+                  // If everything is valid, navigate to the home page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ParkingSlotsPage()),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
@@ -98,8 +143,10 @@ class LoginPage extends StatelessWidget {
             // Sign up link
             TextButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SignUpPage()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SignUpPage()),
+                );
               },
               child: Text(
                 'Sign up',
@@ -116,3 +163,5 @@ class LoginPage extends StatelessWidget {
     );
   }
 }
+
+

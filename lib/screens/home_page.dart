@@ -141,17 +141,17 @@ class ParkingSlotsPage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.circle, color: Colors.green, size: 20),
-                SizedBox(width: 5),
-                Text(
-                  'Empty',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-                SizedBox(width: 20),
                 Icon(Icons.circle, color: Colors.red, size: 20),
                 SizedBox(width: 5),
                 Text(
-                  'Full',
+                  'Booked',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                SizedBox(width: 20),
+                Icon(Icons.circle, color: Colors.green, size: 20),
+                SizedBox(width: 5),
+                Text(
+                  'Available',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ],

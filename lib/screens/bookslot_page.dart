@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Importing DateFormat
+import 'dart:math'; // Import Random
+import 'submited_page.dart'; // Correctly imported SubmittedPage
 
 void main() => runApp(CarParkApp());
 
@@ -26,6 +28,18 @@ class _BookSlotPageState extends State<BookSlotPage> {
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
   int _selectedDuration = 1; // Default duration: 1 hour
+  Color _slotColor = Colors.green; // Default color is green (available)
+
+  // Controllers for the text fields
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _carNoController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Randomly decide if the slot is available (green) or unavailable (red)
+    _slotColor = Random().nextBool() ? Colors.green : Colors.red;
+  }
 
   Future<void> _selectTime(BuildContext context, bool isStartTime) async {
     final TimeOfDay? picked = await showTimePicker(
@@ -45,7 +59,7 @@ class _BookSlotPageState extends State<BookSlotPage> {
 
   // Formats the selected TimeOfDay into a readable format (e.g., 12:00 PM)
   String formatTime(TimeOfDay? time) {
-    if (time == null) return '--:--';
+    if (time == null) return "please set time";
     final now = DateTime.now();
     final formattedTime = DateFormat.jm()
         .format(DateTime(now.year, now.month, now.day, time.hour, time.minute));
@@ -70,7 +84,7 @@ class _BookSlotPageState extends State<BookSlotPage> {
         title: Text('Book Slot'),
         backgroundColor: Colors.black,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
@@ -80,7 +94,7 @@ class _BookSlotPageState extends State<BookSlotPage> {
             ),
             SizedBox(height: 20),
             Text(
-              'Book Slot ${widget.slotNumber}',
+              'Book Slot ${widget.slotNumber}', // Display current slot number
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
@@ -91,6 +105,7 @@ class _BookSlotPageState extends State<BookSlotPage> {
 
             // Name TextField
             TextField(
+              controller: _nameController,
               style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Enter Your Name',
@@ -106,6 +121,7 @@ class _BookSlotPageState extends State<BookSlotPage> {
 
             // Car No. TextField
             TextField(
+              controller: _carNoController,
               style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Car No.',
@@ -118,7 +134,6 @@ class _BookSlotPageState extends State<BookSlotPage> {
               ),
             ),
             SizedBox(height: 20),
-            // "Book Slot" Title
 
             // Start Time Picker
             Row(
@@ -208,11 +223,11 @@ class _BookSlotPageState extends State<BookSlotPage> {
               height: 50,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: _slotColor, // Slot color (red or green)
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                'Slot - ${widget.slotNumber}',
+                'Slot - ${widget.slotNumber}', // Display current slot number
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -234,10 +249,36 @@ class _BookSlotPageState extends State<BookSlotPage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
+                    if (_nameController.text.isEmpty ||
+                        _carNoController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please fill all details'),
+                          backgroundColor: Colors.red,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      return; // Exit early if validation fails
+                    }
+
                     if (validateTimeSelection()) {
-                      // Add booking submission logic here
-                      // e.g., save the booking details to the database or navigate to a success page
-                      print("Booking confirmed: Slot ${widget.slotNumber}");
+                      // Change slot color to red (booked)
+                      setState(() {
+                        _slotColor = Colors.red;
+                      });
+
+                      // Navigate to the SubmittedPage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SubmittedPage(
+                            slotNumber: widget.slotNumber,
+                            name: _nameController.text,
+                            carNo: _carNoController.text,
+                            bookingDuration: Duration(hours: _selectedDuration), // Pass duration
+                          ),
+                        ),
+                      );
                     } else {
                       showDialog(
                         context: context,
