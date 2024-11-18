@@ -1,8 +1,61 @@
 import 'package:flutter/material.dart';
 import 'bookslot_page.dart'; // Assuming this file exists
-import 'profile_page.dart'; // You need to create this file for ProfilePage
+import 'profile_page.dart'; // For UserProfilePage
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ParkingSlotsPage extends StatelessWidget {
+class ParkingSlotsPage extends StatefulWidget {
+  @override
+  _ParkingSlotsPageState createState() => _ParkingSlotsPageState();
+}
+
+class _ParkingSlotsPageState extends State<ParkingSlotsPage> {
+  String? userName;
+  String? userEmail;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserDetails();
+  }
+
+  Future<void> _fetchUserDetails() async {
+    try {
+      User? currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser != null) {
+        // Fetch user details from Firestore
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .get();
+
+        if (userDoc.exists) {
+          setState(() {
+            userName = userDoc['userName'] ?? 'User';
+            userEmail = userDoc['email'] ?? 'No Email';
+          });
+        } else {
+          setState(() {
+            userName = 'Unknown User';
+            userEmail = 'Unknown Email';
+          });
+        }
+      }
+    } catch (e) {
+      print("Error fetching user details: $e");
+      setState(() {
+        userName = 'Error';
+        userEmail = 'Error';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,10 +68,9 @@ class ParkingSlotsPage extends StatelessWidget {
             // Profile Section
             GestureDetector(
               onTap: () {
-                // Navigate to ProfilePage when any profile info is tapped
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => UserProfilePage()),
+                  MaterialPageRoute(builder: (context) => UserProfileApp()),
                 );
               },
               child: Row(
@@ -33,11 +85,13 @@ class ParkingSlotsPage extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 10),
-                  Column(
+                  isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'user',
+                        userName ?? 'Unknown User',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 22,
@@ -45,7 +99,7 @@ class ParkingSlotsPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'user@gmail.com',
+                        userEmail ?? 'Unknown Email',
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: 16,
@@ -80,13 +134,11 @@ class ParkingSlotsPage extends StatelessWidget {
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
                 children: List.generate(10, (index) {
-                  bool isSlotGreen =
-                      index % 2 == 0; // Even slots are green, odd are red
+                  bool isSlotGreen = index % 2 == 0;
 
                   return GestureDetector(
                     onTap: () {
                       if (isSlotGreen) {
-                        // Navigate to the BookSlotPage for green slots
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -95,7 +147,6 @@ class ParkingSlotsPage extends StatelessWidget {
                           ),
                         );
                       } else {
-                        // Show a dialog that the slot is full for red slots
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
@@ -106,8 +157,7 @@ class ParkingSlotsPage extends StatelessWidget {
                               actions: [
                                 TextButton(
                                   onPressed: () {
-                                    Navigator.of(context)
-                                        .pop(); // Close the dialog
+                                    Navigator.of(context).pop();
                                   },
                                   child: Text('OK'),
                                 ),

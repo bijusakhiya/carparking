@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'home_page.dart';
 import 'login_page.dart';
-import 'package:firebase_core/firebase_core.dart';  // Firebase core package
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Firebase Firestore package
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -188,13 +188,28 @@ class SignUpPage extends StatelessWidget {
                         MaterialPageRoute(
                             builder: (context) => ParkingSlotsPage()),
                       );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                    } on FirebaseAuthException catch (e) {
+                      if (e.code == 'email-already-in-use') {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'This email is already registered. Please log in.'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                        // Navigate to login page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error: ${e.message}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
                     }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(

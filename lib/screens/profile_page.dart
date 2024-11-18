@@ -1,6 +1,4 @@
-
 import 'package:flutter/material.dart';
-import 'package:carparking2/screens/profile_page.dart'; // This should match the actual file path
 import 'login_page.dart';
 
 void main() {
@@ -11,15 +9,34 @@ class UserProfileApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: UserProfilePage(),
+      home: UserProfilePage(), // Initial screen
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
 class UserProfilePage extends StatelessWidget {
+  final String? userName;
+  final String? email;
+  final String? carNo;
+  final String? phoneNo;
+  final int? bookedSlot; // Optional, for users who haven't booked yet
+
+  const UserProfilePage({
+    this.userName,
+    this.email,
+    this.carNo,
+    this.phoneNo,
+    this.bookedSlot, // Slot details can be null
+  });
+
   @override
   Widget build(BuildContext context) {
+    TextEditingController nameController = TextEditingController(text: userName);
+    TextEditingController emailController = TextEditingController(text: email);
+    TextEditingController carNoController = TextEditingController(text: carNo);
+    TextEditingController phoneController = TextEditingController(text: phoneNo);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('User Profile'),
@@ -42,25 +59,21 @@ class UserProfilePage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 10),
-            // Email Text
-            Text(
-              'kartik32@gmail.com',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            SizedBox(height: 20),
-            // User Profile Form
-            Text(
-              'User Profile',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white, // Set text color for visibility
+            // Email TextField
+            TextFormField(
+              controller: emailController,
+              decoration: InputDecoration(
+                labelText: 'Enter Your Email',
+                filled: true,
+                fillColor: Colors.grey[200],
+                border: OutlineInputBorder(),
               ),
+              style: TextStyle(color: Colors.black),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             // Name TextField
             TextFormField(
-              initialValue: 'ABC Kumar',
+              controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Enter Your Name',
                 filled: true,
@@ -72,7 +85,7 @@ class UserProfilePage extends StatelessWidget {
             SizedBox(height: 10),
             // Car Number TextField
             TextFormField(
-              initialValue: 'GJ-03 JP 2556',
+              controller: carNoController,
               decoration: InputDecoration(
                 labelText: 'Car No.',
                 filled: true,
@@ -84,7 +97,7 @@ class UserProfilePage extends StatelessWidget {
             SizedBox(height: 10),
             // Phone Number TextField
             TextFormField(
-              initialValue: '8649205675',
+              controller: phoneController,
               decoration: InputDecoration(
                 labelText: 'Phone No.',
                 filled: true,
@@ -93,29 +106,47 @@ class UserProfilePage extends StatelessWidget {
               ),
               style: TextStyle(color: Colors.black),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
+            // Booked Slot Display
+            if (bookedSlot != null) ...[
+              Text(
+                'Booked Slot: Slot $bookedSlot',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 20),
+            ],
+            // Save Changes Button
+            ElevatedButton(
+              onPressed: () {
+                // Handle save logic here
+                Navigator.pop(context, {
+                  'userName': nameController.text,
+                  'email': emailController.text,
+                  'carNo': carNoController.text,
+                  'phoneNo': phoneController.text,
+                  'bookedSlot': bookedSlot,
+                });
+              },
+              child: Text('Save Changes'),
+            ),
+            SizedBox(height: 10),
             // Logout Button
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => LoginPage()));
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
                 // Handle logout action
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Logged out')),
                 );
               },
               child: Text('Logout'),
-            ),
-            SizedBox(height: 10),
-            // Back Button
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Go back to the previous screen
-              },
-              child: Text(
-                'Back',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
-              ),
             ),
           ],
         ),
